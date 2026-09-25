@@ -1,0 +1,1021 @@
+/* Approved voxel HUD: hard edges, inset highlights and clear parcel states. */
+:root {
+  --yellow: #f1c443;
+  --line: #30404d;
+  --cyan: #72dfbc;
+  background: #09131e;
+}
+.atlas-app {
+  grid-template-rows: 78px 1fr 32px;
+}
+.game-header,
+.rail,
+.game-footer {
+  background: #0b1521;
+}
+.game-header {
+  border-bottom: 2px solid #30404d;
+}
+.rail {
+  border-right: 2px solid #30404d;
+}
+.game-header .wordmark {
+  font-size: 24px;
+  letter-spacing: 1px;
+  font-weight: 800;
+}
+.wordmark span {
+  color: #7e99a8;
+  font-size: 7px;
+  letter-spacing: 1.5px;
+}
+.rail-logo,
+.rail nav button,
+.header-profile,
+.connect,
+.my-lands,
+.parcel-art,
+.owner-card,
+.enter-coop,
+.purchase-details,
+.parcel-status,
+.map-filters,
+.map-filters button,
+.search-field,
+.layers-button,
+.zoom-stack,
+.mini-map,
+.map-legend,
+.reopen-panel,
+.game-dialog,
+.modal-primary,
+.modal-notice,
+.collection-card,
+.avatar-options button,
+.profile-input input {
+  border-radius: 2px;
+}
+.connect,
+.enter-coop,
+.modal-primary,
+.demo-claim {
+  box-shadow:
+    inset 0 2px #ffffff4a,
+    inset 0 -4px #0004,
+    3px 4px #050a12;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.rail nav button.active {
+  background: #143630;
+  border-color: #3e9181;
+}
+.rail-logo {
+  background: #f0c449;
+}
+.header-profile {
+  width: 43px;
+  height: 43px;
+  overflow: hidden;
+  border: 1px solid #5c8c86;
+  background: #193542;
+}
+.my-lands {
+  background: #514786;
+  border-color: #8075b1;
+  color: #e2dcfb;
+}
+.voxel-avatar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+.header-profile .voxel-avatar {
+  width: 100%;
+  height: 100%;
+}
+.world-heading {
+  margin-top: 0;
+  border: 1px solid #49665e;
+  background: #102631ed;
+  min-width: 280px;
+  padding: 12px 17px;
+  box-shadow: 3px 4px #08181955;
+}
+.world-heading h1 {
+  font-size: 22px !important;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin: 6px 0 0;
+  line-height: 1.2;
+  text-shadow: none;
+}
+.world-heading p {
+  font-size: 9px;
+  margin-top: 7px;
+  color: #819f95;
+}
+.world-heading .overline {
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+.world-heading .version {
+  display: none;
+}
+.map-top {
+  inset: 22px 23px auto;
+  align-items: flex-start;
+}
+.map-toolbar {
+  position: static;
+}
+.map-filters {
+  top: 137px;
+  left: 23px;
+  border-color: #405c4a;
+}
+.map-filters button {
+  font-weight: 600;
+  font-size: 9px;
+}
+.map-filters .active {
+  background: #e1e9bd !important;
+}
+.region-label {
+  display: none;
+}
+.map-shading {
+  box-shadow: inset 0 0 75px #061c2833;
+  background: linear-gradient(
+    #0a202349,
+    transparent 23%,
+    transparent 85%,
+    #071b2166
+  );
+}
+.free {
+  background: #3d9a61;
+}
+.owned {
+  background: #984951;
+}
+.sale {
+  background: #c19a37;
+}
+.map-legend {
+  font-size: 9px;
+  gap: 13px;
+  border-color: #43634c;
+  background: #10242cf5;
+}
+.map-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 0;
+}
+.map-legend i.owned {
+  box-shadow: inset 0 0 0 2px #984951;
+  background: #ebbaaf;
+}
+.map-legend i.sale {
+  transform: rotate(45deg);
+}
+.parcel-status.owned {
+  background: #35242e;
+  border-color: #795056;
+  color: #e7a5a1;
+}
+.parcel-status.sale {
+  background: #373019;
+  color: #f2d07d;
+  border-color: #8a743d;
+}
+.parcel-status.free {
+  color: #8addad;
+  background: #133729;
+  border-color: #3c8158;
+}
+.resident-marker {
+  width: 220px;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(5px 10px 8px #04111a70);
+  z-index: 2;
+}
+.resident-marker:hover {
+  transform: translate(-50%, -100%) translateY(-4px);
+}
+.resident-marker.selected {
+  width: 232px;
+}
+.resident-art {
+  height: 210px;
+  border-radius: 0;
+  border: 2px solid #657e91;
+  border-bottom: 0;
+  background: #22364c;
+  overflow: hidden;
+}
+.resident-marker.selected .resident-art {
+  height: 220px;
+  border-color: #e1de91;
+  box-shadow: none;
+}
+.resident-art:before {
+  display: none;
+}
+.resident-art .voxel-avatar {
+  object-position: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+.resident-name {
+  border-radius: 0;
+  border: 2px solid #657e91;
+  border-top: 0;
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 14px;
+  font-family: "Manrope", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: #111d29;
+  line-height: 1.3;
+}
+.resident-name > span {
+  font-family: "Golos Text", sans-serif;
+  font-size: 7px;
+  font-weight: 500;
+  color: #829bab;
+  letter-spacing: 0.9px;
+  margin-top: 6px;
+}
+.resident-marker.selected .resident-name {
+  border-width: 2px;
+  border-color: #e1de91;
+}
+.resident-marker.selected:after {
+  content: none;
+}
+.resident-marker > i {
+  bottom: -10px;
+  width: 13px;
+  height: 13px;
+  left: calc(50% - 6px);
+  border: 2px solid #708d76;
+  background: #c8dfa5;
+  border-radius: 0;
+}
+.marker-corner {
+  border-radius: 0;
+  right: 8px;
+  top: 8px;
+  width: 20px;
+  height: 20px;
+  background: #101e2deb;
+  border-color: #97acb677;
+}
+.my-marker .resident-art,
+.my-marker .resident-name {
+  border-color: #72dcaa;
+}
+.my-marker .resident-name > span {
+  color: #7fdeb3;
+}
+.owner-picture {
+  border-radius: 1px;
+  width: 43px;
+  height: 43px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.owner-card {
+  border-color: #294152;
+  background: #111f2c;
+}
+.owner-card strong {
+  font-size: 12px;
+}
+.owner-card > div > span {
+  font-size: 7px;
+}
+.parcel-panel {
+  background: #0d1723;
+}
+.panel-title {
+  height: 60px;
+}
+.panel-title strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+.panel-title > span > svg {
+  border-radius: 0;
+}
+.panel-scroll {
+  padding: 20px;
+}
+.parcel-name-row h2 {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 16px;
+  letter-spacing: 0.1px;
+}
+.panel-section h3 {
+  font-size: 9px;
+}
+.panel-section dl > div {
+  font-size: 11px;
+}
+.price-line {
+  font-size: 12px;
+}
+.price-line small {
+  font-size: 9px;
+}
+.enter-coop {
+  font-size: 11px;
+  padding: 15px 11px;
+  background: #f1c443;
+  border-color: #f4d879;
+}
+.panel-scroll .guest-note {
+  font-size: 8px;
+}
+.purchase-details {
+  font-size: 11px;
+}
+.design-note {
+  font-size: 9px;
+}
+.demo-claim {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #6bcd9e;
+  color: #132f24;
+  border: 1px solid #a0ecc4;
+  padding: 14px 11px;
+  margin: 18px 0;
+  font-size: 11px;
+}
+.owned-banner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: #89d8b3;
+  margin: 16px 0;
+  line-height: 1.6;
+}
+.game-dialog {
+  width: 640px;
+  border: 1px solid #4e6877;
+  background: #101b27;
+  box-shadow:
+    inset 0 2px #6b849044,
+    7px 9px #0006;
+  padding: 32px;
+}
+.game-dialog h2 {
+  font-size: 26px;
+  font-weight: 800;
+}
+.modal-primary {
+  border-radius: 1px;
+}
+.profile-editor h2 {
+  margin-bottom: 12px;
+}
+.editor-intro {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #91a8b5;
+}
+.profile-preview {
+  display: flex;
+  gap: 17px;
+  align-items: center;
+  border: 1px solid #355063;
+  background: #11252e;
+  padding: 12px;
+  margin: 19px 0;
+}
+.profile-preview > div {
+  height: 94px;
+  width: 94px;
+  flex-shrink: 0;
+  background: #1c3343;
+  border: 1px solid #597789;
+}
+.profile-preview > div > svg {
+  width: 100%;
+  height: 100%;
+}
+.profile-preview strong {
+  font-size: 17px;
+  color: #d7e8dd;
+  overflow-wrap: anywhere;
+}
+.profile-preview small {
+  font-size: 10px;
+  color: #85ada3;
+  display: block;
+  margin-top: 7px;
+  line-height: 1.6;
+}
+.profile-preview em {
+  font-style: normal;
+  font-size: 9px;
+  color: #667f8c;
+  display: block;
+  margin-top: 10px;
+}
+.profile-input {
+  font-size: 12px;
+}
+.profile-input input {
+  font-size: 14px;
+}
+.avatar-choice-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 23px 0 12px;
+}
+.avatar-choice-heading h3 {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: #a9c1ce;
+}
+.avatar-choice-heading > span {
+  font-size: 7px;
+  letter-spacing: 0.7px;
+  color: #5e7f8c;
+}
+.avatar-options {
+  gap: 9px;
+}
+.avatar-options button {
+  aspect-ratio: auto;
+  position: relative;
+  border: 2px solid #34495a;
+  padding: 0;
+  background: #152535;
+  overflow: hidden;
+}
+.avatar-options button:hover {
+  border-color: #95bdaa;
+  transform: translateY(-2px);
+}
+.avatar-options .voxel-avatar {
+  height: auto;
+  width: 100%;
+  aspect-ratio: 1;
+}
+.avatar-options button > svg {
+  height: 16px;
+  width: 16px;
+  right: 4px;
+  bottom: 25px;
+  border-radius: 0;
+}
+.avatar-options .avatar-option-name {
+  display: block;
+  text-align: center;
+  color: #a5bac7;
+  font-size: 7px;
+  line-height: 1.4;
+  min-height: 23px;
+  padding: 6px 1px;
+  font-weight: 500;
+  background: #0f1b29;
+}
+.avatar-options button[aria-pressed="true"] {
+  border-color: #78e2b4;
+}
+.avatar-options button[aria-pressed="true"] .avatar-option-name {
+  color: #8cddbc;
+}
+.avatar-upload {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px dashed #476277;
+  background: #13212e;
+  padding: 14px;
+  margin: 20px 0 8px;
+  cursor: pointer;
+  color: #93bbb3;
+}
+.avatar-upload input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.avatar-upload:focus-within {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+.avatar-upload strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+}
+.avatar-upload small {
+  display: block;
+  font-size: 9px;
+  color: #6d8c9c;
+  margin-top: 5px;
+  line-height: 1.7;
+}
+.local-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 9px;
+  line-height: 1.8;
+  color: #698a93;
+  margin-top: 16px;
+}
+.local-privacy svg {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.editor-error {
+  padding: 12px;
+  background: #3b2630;
+  border: 1px solid #87515c;
+  color: #e8b0b0;
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 14px;
+}
+.my-land-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 22px 0;
+}
+.my-land-list button {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 10px;
+  border: 1px solid #345163;
+  background: #12242e;
+  text-align: left;
+}
+.my-land-list img {
+  width: 57px;
+  height: 57px;
+  border: 1px solid #638d7e;
+}
+.my-land-list strong {
+  font-size: 14px;
+  color: #d9e9db;
+}
+.my-land-list small {
+  display: block;
+  color: #829ea3;
+  font-size: 10px;
+  margin-top: 7px;
+}
+.my-land-list button > svg {
+  margin-left: auto;
+  color: #79c2a8;
+}
+.demo-feedback {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  border: 1px solid #54876e;
+  background: #132f29;
+  box-shadow: 5px 6px #03151aa8;
+  color: #d1e2ce;
+  padding: 15px 17px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  max-width: min(600px, 90vw);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.demo-feedback button {
+  display: flex;
+  padding: 3px;
+  color: #9bbfa9;
+  flex-shrink: 0;
+}
+.placement-title {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 24px 0 14px;
+}
+.placement-title h3 {
+  font-size: 11px;
+  letter-spacing: 0.7px;
+}
+.placement-title span {
+  font-size: 10px;
+  color: #728e9c;
+}
+.demo-bird-placement {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.demo-bird-placement button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  background: #1b2c37;
+  border: 1px solid #3c5865;
+  padding: 8px;
+  text-align: left;
+}
+.demo-bird-placement button[aria-pressed="true"] {
+  border-color: #79bfa2;
+}
+.demo-bird-placement button > svg:first-child {
+  width: 100%;
+  height: 85px;
+  grid-column: 1/-1;
+}
+.demo-bird-placement strong {
+  font-size: 9px;
+  line-height: 1.5;
+  grid-column: 1/-1;
+  min-height: 27px;
+}
+.demo-bird-placement small {
+  font-size: 8px;
+  color: #83b39b;
+  margin-top: 8px;
+}
+.demo-bird-placement button > svg:last-child {
+  margin-top: 5px;
+  color: #83c3a6;
+}
+.transfer-test {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+  border: 1px solid #665745;
+  padding: 12px;
+  font-size: 10px;
+  color: #cbb68d;
+  margin-top: 19px;
+}
+.coop-sketch {
+  border-radius: 1px;
+  image-rendering: pixelated;
+}
+.coop-bird {
+  animation: bird-hop 3s ease-in-out infinite;
+}
+.cb1 {
+  animation-delay: -1s;
+}
+.cb2 {
+  animation-delay: -2s;
+}
+.cb3 {
+  left: 83%;
+  bottom: 14px;
+  width: 68px;
+  height: 68px;
+  animation-delay: -0.5s;
+}
+.coop-caption {
+  border-radius: 0;
+}
+.tiny-bird,
+.collection-card {
+  border-radius: 0;
+}
+.collection-card > strong {
+  font-size: 12px;
+}
+.collection-card > small {
+  font-size: 10px;
+}
+.collection-card {
+  box-shadow: 3px 4px #050d15;
+}
+.game-footer {
+  font-size: 7px;
+}
+.game-footer > span {
+  letter-spacing: 0.5px;
+}
+@keyframes bird-hop {
+  0%,
+  75%,
+  100% {
+    transform: translateY(0);
+  }
+  85% {
+    transform: translateY(-5px);
+  }
+}
+@media (min-width: 1700px) {
+  .resident-marker {
+    width: 242px;
+  }
+  .resident-art {
+    height: 232px;
+  }
+  .resident-marker.selected {
+    width: 250px;
+  }
+  .resident-marker.selected .resident-art {
+    height: 240px;
+  }
+  .parcel-panel {
+    width: 355px;
+  }
+}
+@media (max-width: 1250px) {
+  .game-header .wordmark {
+    font-size: 20px;
+  }
+  .world-heading {
+    min-width: 235px;
+  }
+  .world-heading h1 {
+    font-size: 19px !important;
+  }
+  .map-toolbar {
+    max-width: 220px;
+  }
+  .search-field {
+    width: 175px;
+  }
+  .resident-marker {
+    width: 180px;
+  }
+  .resident-art {
+    height: 170px;
+  }
+  .resident-marker.selected {
+    width: 190px;
+  }
+  .resident-marker.selected .resident-art {
+    height: 180px;
+  }
+  .resident-name {
+    font-size: 12px;
+    padding: 10px 8px;
+  }
+  .world-count {
+    display: none;
+  }
+  .parcel-panel {
+    width: 292px;
+  }
+  .panel-scroll {
+    padding: 16px;
+  }
+  .panel-section dl > div {
+    font-size: 10px;
+  }
+  .owner-card strong {
+    font-size: 11px;
+  }
+  .design-note {
+    font-size: 8px;
+  }
+}
+@media (max-width: 1000px) {
+  .world-heading {
+    min-width: 200px;
+    padding: 12px;
+  }
+  .map-top {
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+  }
+  .map-toolbar {
+    position: absolute;
+    top: 110px;
+    left: 0;
+    right: 0;
+    max-width: none;
+    pointer-events: auto;
+  }
+  .search-field {
+    width: 230px;
+  }
+  .map-filters {
+    top: 193px;
+  }
+  .resident-marker {
+    width: 155px;
+  }
+  .resident-art {
+    height: 145px;
+  }
+  .resident-marker.selected {
+    width: 165px;
+  }
+  .resident-marker.selected .resident-art {
+    height: 155px;
+  }
+  .resident-name {
+    font-size: 10px;
+  }
+  .resident-name > span {
+    font-size: 6px;
+  }
+}
+@media (max-width: 760px) {
+  .atlas-app {
+    grid-template-rows: 64px 1fr 60px;
+    min-height: 600px;
+  }
+  .game-header {
+    padding: 0 13px;
+  }
+  .game-header .wordmark {
+    font-size: 18px;
+  }
+  .wordmark span {
+    font-size: 5px;
+    letter-spacing: 1px;
+  }
+  .header-profile {
+    height: 35px;
+    width: 35px;
+  }
+  .world-heading {
+    position: static;
+    min-width: 0;
+    width: 218px;
+    padding: 11px 12px;
+  }
+  .world-heading h1 {
+    font-size: 19px !important;
+    letter-spacing: 0.4px;
+  }
+  .world-heading p {
+    font-size: 8px;
+  }
+  .world-heading .overline {
+    font-size: 6px !important;
+    letter-spacing: 0.6px;
+  }
+  .map-top {
+    inset: 15px 14px auto;
+    gap: 10px;
+  }
+  .map-toolbar {
+    position: static;
+    max-width: none;
+    align-self: stretch;
+    justify-content: flex-start;
+    pointer-events: auto;
+  }
+  .search-field {
+    width: calc(100% - 45px);
+    height: 35px;
+  }
+  .layers-button {
+    width: 35px;
+    height: 35px;
+  }
+  .map-filters {
+    left: 14px;
+    top: 163px;
+    gap: 3px;
+  }
+  .map-filters button {
+    font-size: 8px;
+    padding: 8px;
+  }
+  .resident-marker {
+    width: 132px;
+  }
+  .resident-art {
+    height: 124px;
+  }
+  .resident-marker.selected {
+    width: 140px;
+  }
+  .resident-marker.selected .resident-art {
+    height: 132px;
+  }
+  .resident-name {
+    padding: 8px 6px;
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+  .resident-name > span {
+    font-size: 5px;
+    letter-spacing: 0.6px;
+  }
+  .marker-corner {
+    height: 16px;
+    width: 16px;
+    top: 5px;
+    right: 5px;
+  }
+  .parcel-panel {
+    width: min(316px, calc(100vw - 38px));
+  }
+  .map-legend {
+    font-size: 7px;
+    gap: 10px;
+    padding: 10px;
+  }
+  .map-legend i {
+    width: 6px;
+    height: 6px;
+  }
+  .game-dialog {
+    padding: 24px;
+    width: 600px;
+  }
+  .game-dialog h2 {
+    font-size: 22px;
+  }
+  .profile-preview {
+    gap: 12px;
+    padding: 9px;
+  }
+  .profile-preview > div {
+    width: 73px;
+    height: 73px;
+  }
+  .profile-preview strong {
+    font-size: 14px;
+  }
+  .profile-preview small {
+    font-size: 9px;
+  }
+  .profile-preview em {
+    font-size: 8px;
+  }
+  .avatar-choice-heading > span {
+    display: none;
+  }
+  .avatar-choice-heading h3 {
+    font-size: 9px;
+  }
+  .avatar-options {
+    gap: 6px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .avatar-options .avatar-option-name {
+    font-size: 7px;
+  }
+  .profile-editor .editor-intro {
+    font-size: 11px;
+  }
+  .demo-feedback {
+    bottom: 75px;
+    width: calc(100% - 30px);
+    font-size: 11px;
+  }
+  .demo-bird-placement {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .demo-bird-placement strong {
+    font-size: 10px;
+    min-height: 0;
+  }
+  .demo-bird-placement button > svg:first-child {
+    height: 90px;
+  }
+  .rail {
+    border-right: 0;
+  }
+  .rail nav button {
+    border-radius: 0;
+  }
+  .cb3 {
+    left: 77%;
+    width: 55px;
+    height: 55px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coop-bird {
+    animation: none;
+  }
+}

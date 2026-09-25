@@ -1,0 +1,17 @@
+export const AVATARS = [
+  { id: "nova", name: "Нова · инженер", src: "/avatars/nova.svg" },
+  { id: "rowan", name: "Роуэн · следопыт", src: "/avatars/rowan.svg" },
+  { id: "mika", name: "Мика · художница", src: "/avatars/mika.svg" },
+  { id: "sol", name: "Сол · странник", src: "/avatars/sol.svg" },
+  { id: "iris", name: "Ирис · волшебница", src: "/avatars/iris.svg" },
+  { id: "kaito", name: "Кайто · самурай", src: "/avatars/kaito.svg" },
+  { id: "bruna", name: "Бруна · кузнец", src: "/avatars/bruna.svg" },
+  { id: "zephyr", name: "Зефир · пилот", src: "/avatars/zephyr.svg" },
+  { id: "nia", name: "Ниа · ботаник", src: "/avatars/nia.svg" },
+  { id: "orin", name: "Орин · рыцарь", src: "/avatars/orin.svg" },
+  { id: "lux", name: "Люкс · музыкант", src: "/avatars/lux.svg" },
+  { id: "tarek", name: "Тарек · искатель", src: "/avatars/tarek.svg" },
+  { id: "echo", name: "Эхо · робот", src: "/avatars/echo.svg" },
+  { id: "fable", name: "Фейбл · эльф", src: "/avatars/fable.svg" },
+  { id: "juno", name: "Джуно · космонавт", src: "/avatars/juno.svg" },
+];

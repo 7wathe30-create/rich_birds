@@ -1,6 +1,7 @@
 @echo off
 setlocal
 title Rich Birds - local prototype
+cd /d "%~dp0"
 
 where node >nul 2>nul
 if errorlevel 1 (
@@ -13,8 +14,14 @@ if errorlevel 1 (
   exit /b 1
 )
 
-if not exist node_modules (
-  echo Ustanavlivayu zavisimosti. Eto nuzhno tolko pri pervom zapuske...
+node -e "const [a,b]=process.versions.node.split('.').map(Number);process.exit(a>22 || a===22 && b>=13 ? 0 : 1)"
+if errorlevel 1 (
+  echo Trebuetsya Node.js 22.13 ili novee. https://nodejs.org/
+  pause
+  exit /b 1
+)
+
+echo Ustanavlivayu zavisimosti tekuschey versii...
   call npm ci
   if errorlevel 1 (
     echo.
@@ -22,11 +29,9 @@ if not exist node_modules (
     pause
     exit /b 1
   )
-)
 
 echo.
-echo Rich Birds zapushchen: http://localhost:3000
+echo Posle nadpisi Rich Birds listening otkroyte http://localhost:3000
 echo Ne zakryvayte eto okno, poka prosmatrivaete proekt.
-start "" http://localhost:3000
 call npm start
 pause

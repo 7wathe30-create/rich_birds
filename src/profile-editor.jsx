@@ -42,7 +42,8 @@ export function ProfileEditor({ profile, onSave }) {
   const [nickname, setNickname] = useState(profile?.nickname || ""),
     [avatar, setAvatar] = useState(profile?.avatar || null),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [saving, setSaving] = useState(false);
   const request = useRef(0);
   useEffect(
     () => () => {
@@ -70,27 +71,31 @@ export function ProfileEditor({ profile, onSave }) {
       if (id === request.current) setBusy(false);
     }
   };
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     if (!nickname.trim() || !avatar) {
       setError("Укажи ник и выбери или загрузи аватар.");
       return;
     }
     try {
-      onSave({ nickname, avatar });
+      setSaving(true);
+      setError("");
+      await onSave({ nickname, avatar });
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSaving(false);
     }
   };
   return (
     <form className="profile-editor" onSubmit={submit}>
       <span className="modal-eyebrow">
-        {profile ? "ТВОЙ ПРОФИЛЬ" : "ШАГ 1 / ЗНАКОМСТВО"} · ДЕМО-РЕЖИМ
+        {profile ? "ТВОЙ ПРОФИЛЬ" : "ШАГ 2 / СОЗДАНИЕ ПРОФИЛЯ"}
       </span>
       <h2>{profile ? "Твой облик в мире" : "Как тебя узнает этот мир?"}</h2>
       <p className="editor-intro">
-        Этот аватар появится на твоих демо-землях. В релизе профиль будет связан
-        с кошельком после входа по подписи.
+        Этот аватар появится внутри клеток твоих земель. Профиль привязан к
+        подтверждённому адресу кошелька и сохраняется в базе данных.
       </p>
       <div className="profile-preview">
         <div>
@@ -131,6 +136,7 @@ export function ProfileEditor({ profile, onSave }) {
         {AVATARS.map((a, i) => (
           <button
             type="button"
+            disabled={saving}
             key={a.id}
             aria-label={`Выбрать аватар ${i + 1}: ${a.name}`}
             aria-pressed={avatar?.kind === "preset" && avatar.index === i}
@@ -161,6 +167,7 @@ export function ProfileEditor({ profile, onSave }) {
         <input
           aria-label="Загрузить свой аватар"
           type="file"
+          disabled={saving}
           accept="image/png,image/jpeg,image/webp"
           onChange={upload}
         />
@@ -170,13 +177,17 @@ export function ProfileEditor({ profile, onSave }) {
           {error}
         </div>
       )}
-      <button className="modal-primary" type="submit" disabled={busy}>
-        {profile ? "Сохранить профиль" : "Создать демо-профиль"}
+      <button className="modal-primary" type="submit" disabled={busy || saving}>
+        {saving
+          ? "Сохранение…"
+          : profile
+            ? "Сохранить профиль"
+            : "Создать профиль"}
         <ArrowRight size={16} />
       </button>
       <p className="local-privacy">
-        <ShieldCheck size={13} /> Сохраняется только в этом браузере. Не
-        регистрация кошелька, не загрузка на сервер.
+        <ShieldCheck size={13} /> Ник и аватар отправляются на сервер. Приватные
+        ключи и seed-фраза не запрашиваются и не сохраняются.
       </p>
     </form>
   );

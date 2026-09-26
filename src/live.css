@@ -1,0 +1,347 @@
+.land-map {
+  overflow: hidden;
+}
+.cell-avatar {
+  position: absolute;
+  z-index: 2;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 0;
+  overflow: hidden;
+  line-height: 0;
+  transform: none;
+  background: #193a31;
+  cursor: pointer;
+  touch-action: none;
+}
+.cell-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.cell-avatar:hover,
+.cell-avatar:focus-visible {
+  outline: 2px solid #e6eeb4;
+  outline-offset: 0;
+  transform: none;
+}
+.map-top,
+.map-toolbar,
+.map-filters,
+.landmark-jump,
+.map-bottom,
+.zoom-stack,
+.reopen-panel {
+  z-index: 4;
+}
+.network-label {
+  font-size: 10px;
+  color: #9db3b1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.network-label i {
+  width: 6px;
+  height: 6px;
+  background: #6bccaa;
+}
+.landmark-jump {
+  position: absolute;
+  bottom: 90px;
+  left: 23px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: #10232eee;
+  border: 1px solid #3b5a59;
+  padding: 9px;
+}
+.landmark-jump > span {
+  font-size: 7px;
+  letter-spacing: 0.7px;
+  color: #79949c;
+  margin-right: 6px;
+}
+.landmark-jump button {
+  font-size: 9px;
+  padding: 6px 8px;
+  background: #263c43;
+  color: #c3d6bb;
+  border: 1px solid #38545b;
+}
+.landmark-jump button:hover {
+  background: #36524f;
+}
+.landmark-detail {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  border: 1px solid #334b5c;
+  padding: 12px;
+  background: #132431;
+}
+.landmark-detail img {
+  width: 56px;
+  height: 56px;
+  image-rendering: pixelated;
+}
+.landmark-detail strong {
+  font-size: 12px;
+  color: #dbe8cb;
+}
+.landmark-detail small {
+  display: block;
+  font-size: 9px;
+  line-height: 1.65;
+  color: #91a4aa;
+  margin-top: 6px;
+}
+.coop-locked {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 18px 0;
+  color: #8093a2;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.coop-locked svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.commerce-note {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #9da99a;
+  border-top: 1px solid #30404d;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+.game-footer {
+  gap: 15px;
+}
+.game-footer > span:nth-child(2) {
+  font-size: 7px;
+}
+.purchase-button {
+  font-size: 13px;
+  letter-spacing: 0.7px;
+}
+.live-app .modal-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.land-catalog {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+.land-catalog > button {
+  padding: 0 0 15px;
+  background: #152430;
+  border: 1px solid #344d5d;
+  text-align: left;
+  overflow: hidden;
+}
+.land-catalog .parcel-art {
+  height: 150px;
+  border: 0;
+  border-bottom: 1px solid #344d5d;
+}
+.land-catalog .island-art {
+  transform: translateX(-50%) scale(0.74);
+  transform-origin: bottom center;
+}
+.land-catalog strong {
+  display: block;
+  font-size: 14px;
+  padding: 13px 13px 0;
+}
+.land-catalog small {
+  display: block;
+  font-size: 10px;
+  color: #7d9ca7;
+  margin: 9px 13px;
+}
+.land-catalog button > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 13px 0;
+  font-size: 10px;
+  color: #a1d7b7;
+}
+.market-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 18px 0;
+}
+.market-tabs button {
+  border: 1px solid #3a5563;
+  padding: 10px 24px;
+  font-size: 12px;
+  background: #172834;
+}
+.market-tabs button[aria-pressed="true"] {
+  background: #e9c658;
+  color: #1e2b1f;
+  border-color: #f1d875;
+}
+.live-app .collection-card > svg {
+  display: block;
+  width: 100%;
+  height: 135px;
+}
+.live-app .collection-card {
+  padding: 16px;
+}
+.live-app .game-dialog > .parcel-art {
+  height: 185px;
+  margin-top: 20px;
+}
+.live-app .game-dialog > .parcel-art .island-art {
+  transform: translateX(-50%) scale(0.9);
+  transform-origin: bottom center;
+}
+.wallet-panel {
+  color: #bbccd1;
+}
+.wallet-panel button {
+  max-width: 100%;
+}
+.wallet-panel p {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.wallet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wallet-list button {
+  padding: 14px;
+  border: 1px solid #3c5364;
+  background: #192c3c;
+  text-align: left;
+}
+.wallet-address {
+  overflow-wrap: anywhere;
+  font-family: monospace;
+  font-size: 12px;
+  color: #b5d8b8;
+}
+.wallet-error {
+  background: #3c2830;
+  color: #eab4b4;
+  padding: 13px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 14px 0;
+}
+.wallet-state {
+  padding: 16px;
+  background: #142833;
+  border: 1px solid #344d5f;
+  margin: 16px 0;
+}
+.wallet-secondary {
+  padding: 12px 16px;
+  margin-top: 14px;
+  border: 1px solid #3b5867;
+  font-size: 12px;
+}
+.live-app .profile-preview {
+  margin-top: 15px;
+}
+.live-app .map-error {
+  z-index: 5;
+}
+.live-app .terms strong {
+  max-width: 58%;
+  text-align: right;
+}
+.live-app .enter-coop:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+@media (max-width: 1250px) {
+  .network-label {
+    font-size: 8px;
+  }
+  .landmark-jump > span {
+    display: none;
+  }
+  .landmark-jump button {
+    font-size: 8px;
+    padding: 5px;
+  }
+  .game-footer > span:nth-child(2) {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .network-label {
+    display: none;
+  }
+  .landmark-jump {
+    left: 14px;
+    right: 64px;
+    bottom: 70px;
+    gap: 4px;
+    padding: 5px;
+    flex-wrap: wrap;
+  }
+  .landmark-jump button {
+    flex: 1;
+    padding: 5px;
+    font-size: 7px;
+    white-space: nowrap;
+  }
+  .land-catalog {
+    gap: 10px;
+  }
+  .land-catalog .parcel-art {
+    height: 120px;
+  }
+  .land-catalog .island-art {
+    transform: translateX(-50%) scale(0.56);
+  }
+  .land-catalog strong {
+    font-size: 11px;
+    padding: 10px 9px 0;
+  }
+  .land-catalog small {
+    font-size: 8px;
+    margin: 8px 9px;
+  }
+  .land-catalog button > span {
+    font-size: 8px;
+    margin: 12px 9px 0;
+  }
+  .game-dialog .terms {
+    font-size: 10px;
+  }
+  .live-app .modal-primary {
+    font-size: 12px;
+  }
+  .live-app .terms strong {
+    max-width: 54%;
+  }
+  .cell-avatar {
+    border-radius: 0;
+  }
+  .live-app .map-filters {
+    top: 163px;
+  }
+  .live-app .map-hint {
+    display: none;
+  }
+}

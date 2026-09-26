@@ -1,7 +1,17 @@
-import { coordinates, tokenId, hash, statusOf } from "./world.js";
+import { coordinates, tokenId, hash } from "./world.js";
 
 export const MIN_ZOOM = 2;
-export const MAX_ZOOM = 54;
+export const MAX_ZOOM = 108;
+export const INITIAL_ZOOM = 24;
+export function cellMarker(id, view) {
+  const p = coordinates(id);
+  return {
+    id,
+    x: view.x + p.x * view.scale + 0.5,
+    y: view.y + p.y * view.scale + 0.5,
+    size: Math.max(0, view.scale - 1),
+  };
+}
 export function zoomAt(view, next, anchor) {
   const scale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, next));
   return {
@@ -19,7 +29,7 @@ export function mountMap(canvas, options) {
   const ctx = canvas.getContext("2d");
   let width = 1,
     height = 1,
-    view = { scale: 7, x: 0, y: 0 },
+    view = { scale: INITIAL_ZOOM, x: 0, y: 0 },
     initialized = false,
     frame = 0,
     drag = null,
@@ -31,14 +41,13 @@ export function mountMap(canvas, options) {
     view.y = height / 2 + (width < 500 ? 40 : 0) - (p.y + 0.5) * view.scale;
     request();
   };
-  const markerIds = [32202, 37095, 40965, 48216, 58164, 55083, 62244, 43812];
   function draw() {
     frame = 0;
     const {
       selected,
       filter,
-      demoLands = [],
-      statusFor = statusOf,
+      markers = [],
+      statusFor = () => "free",
     } = options.current;
     ctx.setTransform(
       devicePixelRatio > 1 ? 1.5 : 1,
@@ -134,50 +143,16 @@ export function mountMap(canvas, options) {
           ctx.strokeRect(x - 7, y - 7, s + 13, s + 13);
         }
       }
-    const landById = new Map(demoLands.map((l) => [l.id, l]));
-    const visibleMarkers = [
-      ...new Set([
-        ...markerIds,
-        ...demoLands.map((l) => l.id),
-        ...(statusFor(selected) !== "free" ? [selected] : []),
-      ]),
-    ]
-      .map((id) => {
-        const p = coordinates(id);
-        return {
-          id,
-          i: Math.floor(hash(id) * 15),
-          mine: landById.get(id)?.owner === "player",
-          visitor: landById.get(id)?.owner === "visitor",
-          x: view.x + (p.x + 0.5) * s,
-          y: view.y + (p.y + 0.5) * s,
-        };
-      })
+    const visibleMarkers = markers
+      .map((m) => ({ ...m, ...cellMarker(m.id, view) }))
       .filter(
         (m) =>
-          m.x > (width < 500 ? 65 : 100) &&
-          m.x < width - (width < 500 ? 65 : 100) &&
-          m.y > (width < 500 ? 245 : 300) &&
-          m.y < height - 70 &&
-          !(m.x < 430 && m.y < (width < 500 ? 340 : 510)) &&
+          m.x + s > 0 &&
+          m.y + s > 0 &&
+          m.x < width &&
+          m.y < height &&
           (filter === "all" || statusFor(m.id) === filter),
-      )
-      .sort(
-        (a, b) =>
-          Number(b.id === selected) - Number(a.id === selected) ||
-          Number(b.mine) - Number(a.mine),
-      )
-      .reduce((visible, marker) => {
-        if (
-          !visible.some(
-            (m) =>
-              Math.abs(m.x - marker.x) < (width < 500 ? 145 : 245) &&
-              Math.abs(m.y - marker.y) < (width < 500 ? 195 : 315),
-          )
-        )
-          visible.push(marker);
-        return visible;
-      }, []);
+      );
     options.current.onFrame({
       scale: s,
       markers: visibleMarkers,
@@ -295,7 +270,7 @@ export function mountMap(canvas, options) {
       request();
     },
     reset: () => {
-      view.scale = 7;
+      view.scale = INITIAL_ZOOM;
       center(48216);
     },
     destroy: () => {

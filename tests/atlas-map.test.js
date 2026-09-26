@@ -1,6 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { zoomAt, parcelAt, MIN_ZOOM, MAX_ZOOM } from "../src/atlas-map.js";
+import { cellMarker } from "../src/atlas-map.js";
+import { coordinates } from "../src/world.js";
+test("avatar always fits its exact parcel at every zoom", () => {
+  for (const scale of [2, 7, 24, 54, 108])
+    for (const id of [1, 48216, 100000]) {
+      const view = { x: -20, y: 13, scale },
+        p = coordinates(id),
+        m = cellMarker(id, view);
+      assert.ok(m.x >= view.x + p.x * scale && m.y >= view.y + p.y * scale);
+      assert.ok(m.x + m.size <= view.x + (p.x + 1) * scale);
+      assert.ok(m.y + m.size <= view.y + (p.y + 1) * scale);
+      assert.equal(parcelAt(m.x + m.size / 2, m.y + m.size / 2, view), id);
+    }
+});
 test("zoom preserves world point beneath pointer and enforces bounds", () => {
   const view = { x: -800, y: -420, scale: 7 },
     anchor = { x: 400, y: 300 };

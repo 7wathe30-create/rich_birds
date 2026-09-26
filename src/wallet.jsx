@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { isAddress, stringToHex } from "viem";
+import { useWalletConnector } from "./wallet-kit.jsx";
 import {
   expectedChainId,
   formatAddress,
@@ -48,6 +49,7 @@ function walletError(error) {
     signature_invalid:
       "Подпись не подтверждена. Убедитесь, что подписываете сообщение этим кошельком.",
     authentication_required: "Войдите по подписи кошелька, чтобы продолжить.",
+    profile_required: "Завершите регистрацию: укажите ник и аватар.",
     invalid_nickname: "Ник должен содержать от 1 до 24 символов.",
     invalid_avatar:
       "Не удалось сохранить аватар. Выберите корректное изображение.",
@@ -80,10 +82,6 @@ function payloadAddress(payload) {
   return validAddress(payload?.address) ? payload.address : null;
 }
 
-function shortWalletName(wallet) {
-  return wallet?.info?.name || "Ethereum-кошелёк";
-}
-
 function networkStatus(chain) {
   if (!chain) return "Сеть не подтверждена";
   const target = `${networkLabel(chain)} · ${chain.name}`;
@@ -95,6 +93,7 @@ function networkStatus(chain) {
 }
 
 export function useWallet() {
+  const connector = useWalletConnector();
   const [config, setConfig] = useState(null);
   const [address, setAddress] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -104,7 +103,6 @@ export function useWallet() {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [wallets, setWallets] = useState([]);
   const configRef = useRef(null);
   const providerRef = useRef(null);
   const providerCleanupRef = useRef(null);
@@ -310,125 +308,31 @@ export function useWallet() {
   }, [clearIdentity, loadAuthenticatedData, revokeSession]);
 
   useEffect(() => {
-    let alive = true;
-    const restore = async (provider, currentConfig) => {
-      if (
-        !provider ||
-        !currentConfig?.chain ||
-        providerRef.current !== provider
-      )
-        return;
-      try {
-        const epoch = epochRef.current;
-        const accounts = providerAccounts(
-          await provider.request({ method: "eth_accounts" }),
-        );
-        const activeAddress = accounts.find(validAddress);
-        const chainId = parseChainId(
-          await provider.request({ method: "eth_chainId" }),
-        );
-        if (
-          !alive ||
-          providerRef.current !== provider ||
-          epochRef.current !== epoch
-        )
-          return;
-        if (!activeAddress) {
-          revokeSession().catch(() => {});
-          return;
-        }
-        if (chainId !== expectedChainId(currentConfig.chain)) {
-          setAddress(activeAddress);
-          setChain({
-            ...currentConfig.chain,
-            expectedChainId: expectedChainId(currentConfig.chain),
-            connectedChainId: chainId,
-          });
-          revokeSession().catch(() => {});
-          return;
-        }
-        setAddress(activeAddress);
-        setChain({
-          ...currentConfig.chain,
-          expectedChainId: expectedChainId(currentConfig.chain),
-          connectedChainId: chainId,
-        });
-        await loadAuthenticatedData(activeAddress, epoch);
-      } catch {
-        if (alive) clearIdentity();
-      }
-    };
-    const announce = (event) => {
-      const detail = event.detail;
-      if (!detail?.provider) return;
-      const next = {
-        info: detail.info || { name: "Ethereum-кошелёк" },
-        provider: detail.provider,
-      };
-      setWallets((existing) =>
-        existing.some((wallet) => wallet.provider === next.provider)
-          ? existing
-          : [...existing, next],
-      );
-      if (!providerRef.current) {
-        bindProvider(next.provider);
-        if (configRef.current) void restore(next.provider, configRef.current);
-      }
-    };
-    window.addEventListener("eip6963:announceProvider", announce);
-    window.dispatchEvent(new Event("eip6963:requestProvider"));
-    if (window.ethereum) {
-      const injected = {
-        info: {
-          uuid: "window.ethereum",
-          name: window.ethereum.isMetaMask ? "MetaMask" : "Браузерный кошелёк",
-        },
-        provider: window.ethereum,
-      };
-      setWallets((existing) =>
-        existing.some((wallet) => wallet.provider === injected.provider)
-          ? existing
-          : [...existing, injected],
-      );
-      bindProvider(injected.provider);
+    updateConfig(connector.server);
+    setReady(true);
+    if (connector.provider) {
+      bindProvider(connector.provider);
+      if (!busyRef.current) void refresh();
     }
-    requestJson("/config")
-      .then((next) => {
-        if (!alive) return;
-        updateConfig(next);
-        if (providerRef.current) void restore(providerRef.current, next);
-      })
-      .catch((loadError) => {
-        if (alive) setError(walletError(loadError));
-      })
-      .finally(() => {
-        if (alive) setReady(true);
-      });
+  }, [
+    connector.server,
+    connector.provider,
+    updateConfig,
+    bindProvider,
+    refresh,
+  ]);
+
+  useEffect(() => {
     return () => {
-      alive = false;
-      window.removeEventListener("eip6963:announceProvider", announce);
       providerCleanupRef.current?.();
       providerCleanupRef.current = null;
       providerRef.current = null;
       epochRef.current++;
     };
-  }, [
-    bindProvider,
-    clearIdentity,
-    loadAuthenticatedData,
-    updateConfig,
-    revokeSession,
-  ]);
+  }, []);
 
   const connect = useCallback(
     async (provider = null) => {
-      const selected = provider || providerRef.current || window.ethereum;
-      if (!selected) {
-        setError(
-          "Ethereum-кошелёк не найден. Установите совместимый кошелёк и обновите страницу.",
-        );
-        return false;
-      }
       if (busyRef.current) return false;
       if (!configRef.current?.chain) {
         setError(
@@ -439,6 +343,19 @@ export function useWallet() {
       busyRef.current = true;
       setBusy(true);
       setError("");
+      let selected;
+      try {
+        selected =
+          provider || providerRef.current || (await connector.select());
+      } catch (selectionError) {
+        setError(walletError(selectionError));
+        endBusy();
+        return false;
+      }
+      if (!selected) {
+        endBusy();
+        return null;
+      }
       if (providerRef.current && providerRef.current !== selected) {
         clearIdentity();
         revokeSession().catch(() => {});
@@ -451,7 +368,7 @@ export function useWallet() {
         if (!expected)
           throw new Error("Сервер передал неверный идентификатор сети.");
         const accounts = providerAccounts(
-          await selected.request({ method: "eth_requestAccounts" }),
+          await selected.request({ method: "eth_accounts" }),
         );
         const activeAddress = accounts.find(validAddress);
         attempt.address = activeAddress;
@@ -486,10 +403,12 @@ export function useWallet() {
           expectedChainId: expected,
           connectedChainId: actual,
         });
-        setProfile(null);
-        setAuthenticated(false);
-        setLands([]);
-        return true;
+        await logoutRef.current;
+        const restored = await loadAuthenticatedData(
+          activeAddress,
+          epochRef.current,
+        );
+        return { address: activeAddress, restored };
       } catch (connectError) {
         setError(walletError(connectError));
         return false;
@@ -499,105 +418,120 @@ export function useWallet() {
         endBusy();
       }
     },
-    [bindProvider, clearIdentity, endBusy, revokeSession],
+    [
+      connector,
+      bindProvider,
+      clearIdentity,
+      endBusy,
+      revokeSession,
+      loadAuthenticatedData,
+    ],
   );
 
-  const signIn = useCallback(async () => {
-    const provider = providerRef.current;
-    const activeAddress = address;
-    const currentConfig = configRef.current;
-    if (!provider || !activeAddress || !currentConfig?.chain) {
-      setError("Сначала подключите кошелёк к целевой сети.");
-      return false;
-    }
-    if (busyRef.current) return false;
-    busyRef.current = true;
-    setBusy(true);
-    setError("");
-    const epoch = epochRef.current;
-    const ensureCurrent = async () => {
-      const accounts = providerAccounts(
-        await provider.request({ method: "eth_accounts" }),
-      );
-      const chainId = parseChainId(
-        await provider.request({ method: "eth_chainId" }),
-      );
-      return (
-        epochRef.current === epoch &&
-        chainId === expectedChainId(currentConfig.chain) &&
-        accounts[0]?.toLowerCase() === activeAddress.toLowerCase()
-      );
-    };
-    try {
-      await logoutRef.current;
-      if (!(await ensureCurrent()))
-        throw new Error(
-          "Кошелёк или сеть изменились. Подключите кошелёк заново.",
-        );
-      const challenge = await requestJson("/auth/challenge", {
-        method: "POST",
-        body: JSON.stringify({
-          address: activeAddress,
-          chainId: expectedChainId(currentConfig.chain),
-        }),
-      });
-      if (typeof challenge?.message !== "string" || !challenge.message)
-        throw new Error("Сервер не выдал сообщение для входа.");
-      if (!(await ensureCurrent()))
-        throw new Error(
-          "Кошелёк или сеть изменились. Подключите кошелёк заново.",
-        );
-      const signature = await provider.request({
-        method: "personal_sign",
-        params: [stringToHex(challenge.message), activeAddress],
-      });
-      if (typeof signature !== "string" || !(await ensureCurrent()))
-        throw new Error(
-          "Подпись не получена или кошелёк изменился. Попробуйте снова.",
-        );
-      const verified = await requestJson("/auth/verify", {
-        method: "POST",
-        body: JSON.stringify({ message: challenge.message, signature }),
-      });
-      if (
-        epochRef.current !== epoch ||
-        payloadAddress(verified)?.toLowerCase() !== activeAddress.toLowerCase()
-      ) {
-        await requestJson("/auth/logout", { method: "POST" }).catch(() => {});
-        throw new Error(
-          "Сервер подтвердил другой адрес или кошелёк изменился. Вход отменён.",
-        );
-      }
-      setAddress(activeAddress);
-      setProfile(verified.profile ?? null);
-      setAuthenticated(true);
-      const result = await requestJson("/lands");
-      if (epochRef.current !== epoch) {
-        await requestJson("/auth/logout", { method: "POST" }).catch(() => {});
+  const signIn = useCallback(
+    async (requestedAddress = null) => {
+      const provider = providerRef.current;
+      const activeAddress =
+        typeof requestedAddress === "string" ? requestedAddress : address;
+      const currentConfig = configRef.current;
+      if (!provider || !activeAddress || !currentConfig?.chain) {
+        setError("Сначала подключите кошелёк к целевой сети.");
         return false;
       }
-      setLands(normalizeLands(result?.lands));
-      return true;
-    } catch (signInError) {
-      if (epochRef.current === epoch) setError(walletError(signInError));
-      return false;
-    } finally {
-      endBusy();
-    }
-  }, [address, endBusy]);
+      if (busyRef.current) return false;
+      busyRef.current = true;
+      setBusy(true);
+      setError("");
+      const epoch = epochRef.current;
+      const ensureCurrent = async () => {
+        const accounts = providerAccounts(
+          await provider.request({ method: "eth_accounts" }),
+        );
+        const chainId = parseChainId(
+          await provider.request({ method: "eth_chainId" }),
+        );
+        return (
+          epochRef.current === epoch &&
+          chainId === expectedChainId(currentConfig.chain) &&
+          accounts[0]?.toLowerCase() === activeAddress.toLowerCase()
+        );
+      };
+      try {
+        await logoutRef.current;
+        if (!(await ensureCurrent()))
+          throw new Error(
+            "Кошелёк или сеть изменились. Подключите кошелёк заново.",
+          );
+        const challenge = await requestJson("/auth/challenge", {
+          method: "POST",
+          body: JSON.stringify({
+            address: activeAddress,
+            chainId: expectedChainId(currentConfig.chain),
+          }),
+        });
+        if (typeof challenge?.message !== "string" || !challenge.message)
+          throw new Error("Сервер не выдал сообщение для входа.");
+        if (!(await ensureCurrent()))
+          throw new Error(
+            "Кошелёк или сеть изменились. Подключите кошелёк заново.",
+          );
+        const signature = await provider.request({
+          method: "personal_sign",
+          params: [stringToHex(challenge.message), activeAddress],
+        });
+        if (typeof signature !== "string" || !(await ensureCurrent()))
+          throw new Error(
+            "Подпись не получена или кошелёк изменился. Попробуйте снова.",
+          );
+        const verified = await requestJson("/auth/verify", {
+          method: "POST",
+          body: JSON.stringify({ message: challenge.message, signature }),
+        });
+        if (
+          epochRef.current !== epoch ||
+          payloadAddress(verified)?.toLowerCase() !==
+            activeAddress.toLowerCase()
+        ) {
+          await requestJson("/auth/logout", { method: "POST" }).catch(() => {});
+          throw new Error(
+            "Сервер подтвердил другой адрес или кошелёк изменился. Вход отменён.",
+          );
+        }
+        setAddress(activeAddress);
+        setProfile(verified.profile ?? null);
+        setAuthenticated(true);
+        const result = await requestJson("/lands");
+        if (epochRef.current !== epoch) {
+          await requestJson("/auth/logout", { method: "POST" }).catch(() => {});
+          return false;
+        }
+        setLands(normalizeLands(result?.lands));
+        return true;
+      } catch (signInError) {
+        if (epochRef.current === epoch) setError(walletError(signInError));
+        return false;
+      } finally {
+        endBusy();
+      }
+    },
+    [address, endBusy],
+  );
 
   const disconnect = useCallback(async () => {
     if (connectionAttempt.current) connectionAttempt.current.invalid = true;
     clearIdentity();
+    providerCleanupRef.current?.();
+    providerCleanupRef.current = null;
+    providerRef.current = null;
     setError("");
     try {
-      await revokeSession();
+      await Promise.all([revokeSession(), connector.disconnect()]);
     } catch (logoutError) {
       setError(
         `Кошелёк отключён на этой странице, но серверную сессию завершить не удалось: ${walletError(logoutError)}`,
       );
     }
-  }, [clearIdentity, revokeSession]);
+  }, [clearIdentity, revokeSession, connector]);
 
   const saveProfile = useCallback(
     async (nextProfile) => {
@@ -662,7 +596,6 @@ export function useWallet() {
     ready,
     busy,
     error,
-    wallets,
     connect,
     signIn,
     disconnect,
@@ -687,7 +620,7 @@ const panelStyles = `
 .wallet-panel__profile{font-weight:600}
 `;
 
-export function WalletPanel({ wallet, onProfile }) {
+export function WalletPanel({ wallet, onProfile, onConnect }) {
   const signedIn = Boolean(wallet?.address && wallet?.authenticated);
   const connectedToTarget = Boolean(
     wallet?.chain &&
@@ -700,7 +633,13 @@ export function WalletPanel({ wallet, onProfile }) {
     <section className="wallet-panel" aria-label="Криптовалютный кошелёк">
       <style>{panelStyles}</style>
       <span className="modal-eyebrow">КОШЕЛЁК / ROBINHOOD CHAIN</span>
-      <h2>{signedIn ? "Вход подтверждён" : "Войти в Rich Birds"}</h2>
+      <h2>
+        {signedIn
+          ? "Вход подтверждён"
+          : wallet?.address
+            ? "Подтвердите вход в кошельке"
+            : "Войти в Rich Birds"}
+      </h2>
       <p>
         Подключение открывает адрес кошелька. Отдельная подпись подтверждает
         вход без перевода средств. Seed-фразу и приватный ключ сайт не
@@ -755,7 +694,7 @@ export function WalletPanel({ wallet, onProfile }) {
           className="wallet-panel__button wallet-panel__button--primary"
           type="button"
           disabled={wallet.busy}
-          onClick={() => wallet.connect()}
+          onClick={onConnect}
         >
           {wallet.busy ? "Переключение сети…" : "Подключиться к целевой сети"}
         </button>
@@ -779,28 +718,14 @@ export function WalletPanel({ wallet, onProfile }) {
       )}
       {!wallet?.address && (
         <div className="wallet-panel__actions">
-          {wallet?.wallets?.length ? (
-            wallet.wallets.map((item, index) => (
-              <button
-                className="wallet-panel__button wallet-panel__button--primary wallet-panel__button--wallet"
-                type="button"
-                key={item.info?.uuid || index}
-                disabled={!wallet.ready || wallet.busy}
-                onClick={() => wallet.connect(item.provider)}
-              >
-                Подключить {shortWalletName(item)}
-              </button>
-            ))
-          ) : (
-            <button
-              className="wallet-panel__button wallet-panel__button--primary"
-              type="button"
-              disabled={!wallet?.ready || wallet?.busy}
-              onClick={() => wallet?.connect()}
-            >
-              {wallet?.busy ? "Подключение…" : "Подключить кошелёк"}
-            </button>
-          )}
+          <button
+            className="wallet-panel__button wallet-panel__button--primary"
+            type="button"
+            disabled={!wallet?.ready || wallet?.busy}
+            onClick={onConnect}
+          >
+            {wallet?.busy ? "Подключение…" : "Подключить кошелёк"}
+          </button>
         </div>
       )}
       {shownError && (

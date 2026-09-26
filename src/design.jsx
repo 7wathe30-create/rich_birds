@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { createRoot } from "react-dom/client";
 import {
   Layers,
   Grid2X2,
@@ -28,7 +27,7 @@ import "./design.css";
 import "./voxel.css";
 import "./live.css";
 
-function App() {
+export default function App() {
   const wallet = useWallet();
   const [selected, setSelected] = useState(48216),
     [filter, setFilter] = useState("all"),
@@ -94,7 +93,24 @@ function App() {
     setModal(null);
     map.current.center(id);
   };
+  const beginConnection = async () => {
+    if (wallet.busy) return;
+    setModal(null);
+    const connected = await wallet.connect();
+    if (connected === null) return;
+    if (!connected) {
+      setModal("wallet");
+      return;
+    }
+    if (connected.restored) return;
+    setModal("wallet");
+    if (await wallet.signIn(connected.address)) setModal(null);
+  };
   const go = (id) => {
+    if ((id === "wallet" || id === "profile") && !wallet.authenticated) {
+      void beginConnection();
+      return;
+    }
     setModal(id === "map" ? null : id);
     setError("");
   };
@@ -129,6 +145,8 @@ function App() {
   const shortAddress = wallet.address
     ? `${wallet.address.slice(0, 6)}…${wallet.address.slice(-4)}`
     : null;
+  const registrationRequired = wallet.authenticated && !wallet.profile;
+  const activeModal = registrationRequired ? "registration" : modal;
   return (
     <div className="atlas-app live-app">
       <aside className="rail">
@@ -182,9 +200,17 @@ function App() {
             <i />
             {wallet.chain?.name || "Подключение к серверу…"}
           </span>
-          <button className="connect" onClick={() => go("wallet")}>
+          <button
+            className="connect"
+            disabled={!wallet.ready || wallet.busy}
+            onClick={() => go("wallet")}
+          >
             <Wallet size={16} />
-            <span>{shortAddress || "Подключить кошелёк"}</span>
+            <span>
+              {wallet.busy
+                ? "Подтверждение…"
+                : shortAddress || "Подключить кошелёк"}
+            </span>
             <ArrowUpRight size={15} />
           </button>
           <button
@@ -334,6 +360,7 @@ function App() {
                 title={l.caption}
                 onClick={() => openLand(l.id)}
               >
+                <img src={l.src} alt="" />
                 {l.name}
               </button>
             ))}
@@ -468,13 +495,37 @@ function App() {
           <ArrowUpRight size={10} />
         </button>
       </footer>
-      {modal && (
+      {activeModal && (
         <Dialog
-          key={modal === "profile" ? `${modal}:${wallet.address}` : modal}
+          key={`${activeModal}:${wallet.address || "guest"}`}
+          dismissible={!registrationRequired && !wallet.busy}
           close={() => setModal(null)}
         >
-          {modal === "wallet" ? (
-            <WalletPanel wallet={wallet} onProfile={() => go("profile")} />
+          {activeModal === "registration" ? (
+            <>
+              <ProfileEditor
+                profile={null}
+                onSave={async (p) => {
+                  await wallet.saveProfile(p);
+                  setModal(null);
+                }}
+              />
+              <button
+                className="wallet-secondary"
+                onClick={async () => {
+                  setModal(null);
+                  await wallet.disconnect();
+                }}
+              >
+                Отменить регистрацию и отключиться
+              </button>
+            </>
+          ) : modal === "wallet" ? (
+            <WalletPanel
+              wallet={wallet}
+              onConnect={beginConnection}
+              onProfile={() => go("profile")}
+            />
           ) : modal === "profile" ? (
             wallet.authenticated ? (
               <ProfileEditor
@@ -485,7 +536,11 @@ function App() {
                 }}
               />
             ) : (
-              <WalletPanel wallet={wallet} onProfile={() => go("profile")} />
+              <WalletPanel
+                wallet={wallet}
+                onConnect={beginConnection}
+                onProfile={() => go("profile")}
+              />
             )
           ) : modal === "purchase" ? (
             <>
@@ -718,8 +773,12 @@ function BirdCatalog() {
     </div>
   );
 }
-function Dialog({ children, close }) {
+function Dialog({ children, close, dismissible = true }) {
   const ref = useRef();
+  const closeRef = useRef();
+  closeRef.current = () => {
+    if (dismissible) close();
+  };
   useEffect(() => {
     const previous = document.activeElement,
       root = ref.current;
@@ -730,7 +789,7 @@ function Dialog({ children, close }) {
     ];
     get()[0]?.focus();
     const key = (e) => {
-      if (e.key === "Escape") close();
+      if (e.key === "Escape") closeRef.current();
       if (e.key === "Tab") {
         const f = get();
         if (e.shiftKey && document.activeElement === f[0]) {
@@ -752,7 +811,7 @@ function Dialog({ children, close }) {
     <div
       className="dialog-backdrop"
       onClick={(e) => {
-        if (e.target === e.currentTarget) close();
+        if (e.target === e.currentTarget) closeRef.current();
       }}
     >
       <section
@@ -762,16 +821,17 @@ function Dialog({ children, close }) {
         aria-modal="true"
         aria-label="Rich Birds"
       >
-        <button
-          className="dialog-close"
-          aria-label="Закрыть окно"
-          onClick={close}
-        >
-          <X size={20} />
-        </button>
+        {dismissible && (
+          <button
+            className="dialog-close"
+            aria-label="Закрыть окно"
+            onClick={close}
+          >
+            <X size={20} />
+          </button>
+        )}
         {children}
       </section>
     </div>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);

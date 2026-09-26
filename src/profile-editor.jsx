@@ -90,9 +90,9 @@ export function ProfileEditor({ profile, onSave }) {
   return (
     <form className="profile-editor" onSubmit={submit}>
       <span className="modal-eyebrow">
-        {profile ? "ТВОЙ ПРОФИЛЬ" : "ШАГ 2 / СОЗДАНИЕ ПРОФИЛЯ"}
+        {profile ? "ТВОЙ ПРОФИЛЬ" : "РЕГИСТРАЦИЯ / ПОСЛЕДНИЙ ШАГ"}
       </span>
-      <h2>{profile ? "Твой облик в мире" : "Как тебя узнает этот мир?"}</h2>
+      <h2>{profile ? "Твой облик в мире" : "Создай свой профиль"}</h2>
       <p className="editor-intro">
         Этот аватар появится внутри клеток твоих земель. Профиль привязан к
         подтверждённому адресу кошелька и сохраняется в базе данных.

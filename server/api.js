@@ -339,6 +339,8 @@ export function createApiHandler({
         json(res, 200, { allowed: false, reason: "authentication_required" });
       } else if (!walletMatchesSession(req, session)) {
         json(res, 200, { allowed: false, reason: "session_address_mismatch" });
+      } else if (!session.profile) {
+        json(res, 200, { allowed: false, reason: "profile_required" });
       } else if (!contractAddress) {
         json(res, 200, {
           allowed: false,

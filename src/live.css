@@ -22,7 +22,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  image-rendering: pixelated;
+  image-rendering: auto;
   pointer-events: none;
 }
 .cell-avatar:hover,
@@ -70,11 +70,19 @@
   margin-right: 6px;
 }
 .landmark-jump button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
   font-size: 9px;
   padding: 6px 8px;
   background: #263c43;
   color: #c3d6bb;
   border: 1px solid #38545b;
+}
+.landmark-jump img {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
 }
 .landmark-jump button:hover {
   background: #36524f;
@@ -88,9 +96,22 @@
   background: #132431;
 }
 .landmark-detail img {
-  width: 56px;
-  height: 56px;
-  image-rendering: pixelated;
+  width: 112px;
+  height: 112px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.wallet-kit-help {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #b9c7cd;
+}
+.wallet-kit-help a {
+  color: #e9c658;
+}
+.connection-loading {
+  padding: 10vh 8vw;
+  color: #dce6de;
 }
 .landmark-detail strong {
   font-size: 12px;
@@ -304,6 +325,10 @@
     padding: 5px;
     font-size: 7px;
     white-space: nowrap;
+  }
+  .landmark-jump img {
+    width: 24px;
+    height: 24px;
   }
   .land-catalog {
     gap: 10px;

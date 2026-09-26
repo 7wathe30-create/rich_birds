@@ -697,6 +697,20 @@ test("chain config is Robinhood testnet by default; lands and commerce never inv
     const cookie = sessionCookie(await login(app));
     assert.deepEqual(
       (await app.request("/api/lands/1/access", { cookie })).body,
+      { allowed: false, reason: "profile_required" },
+    );
+    assert.equal(
+      (
+        await app.request("/api/profile", {
+          method: "PUT",
+          cookie,
+          body: { nickname: "Explorer", avatar: { kind: "preset", index: 0 } },
+        })
+      ).status,
+      200,
+    );
+    assert.deepEqual(
+      (await app.request("/api/lands/1/access", { cookie })).body,
       { allowed: false, reason: "land_contract_unconfigured" },
     );
     assert.deepEqual(
@@ -766,15 +780,13 @@ test("land access verifies ERC-721 ownership through a local Robinhood JSON-RPC 
       assert.match(request.params[0].data, /^0x6352211e[\da-f]{64}$/i);
       result = `0x${"0".repeat(24)}${ownerAddress.slice(2).toLowerCase()}`;
     } else {
-      res
-        .writeHead(200, { "content-type": "application/json" })
-        .end(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            id: request.id,
-            error: { code: -32601, message: "Method not found" },
-          }),
-        );
+      res.writeHead(200, { "content-type": "application/json" }).end(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: request.id,
+          error: { code: -32601, message: "Method not found" },
+        }),
+      );
       return;
     }
     res
@@ -795,6 +807,20 @@ test("land access verifies ERC-721 ownership through a local Robinhood JSON-RPC 
         walletAddress: account.address,
       });
 
+    assert.deepEqual((await requestAccess()).body, {
+      allowed: false,
+      reason: "profile_required",
+    });
+    assert.equal(
+      (
+        await app.request("/api/profile", {
+          method: "PUT",
+          cookie: session,
+          body: { nickname: "Owner", avatar: { kind: "preset", index: 1 } },
+        })
+      ).status,
+      200,
+    );
     assert.deepEqual((await requestAccess()).body, {
       allowed: true,
       reason: null,
